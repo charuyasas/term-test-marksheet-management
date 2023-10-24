@@ -8,18 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
+        Schema::create('class_rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('student_name');
-            $table->string('gender');
-            $table->date('dob');
-            $table->date('enlisted_date');
+            $table->foreignId('grade_id')->constrained('grades','id');
+            $table->string('class_room');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::dropIfExists('class_rooms');
     }
 };

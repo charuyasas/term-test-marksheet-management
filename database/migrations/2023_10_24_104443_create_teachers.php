@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mark_sheets', function (Blueprint $table) {
+        Schema::create('teachers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students','id');
-            $table->integer('subject_id');
-            $table->decimal('marks');
+            $table->string('teacher_name');
+            $table->string('gender');
+            $table->date('dob');
+            $table->date('joined_date');
+            $table->string('address');
+            $table->string('phone_number');
             $table->timestamps();
-
-
         });
     }
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mark_sheets');
+        Schema::dropIfExists('teachers');
     }
 };

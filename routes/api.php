@@ -7,4 +7,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('subject/marks', [\App\Http\Controllers\SubjectTeacherMarksController::class, 'viewMarks'])->name('view.subject.teacher.mark.sheet');
+Route::get('subjects/{subject}/marks', [\App\Http\Controllers\SubjectTeacherMarksController::class, 'viewMarks'])->name('view.subject.teacher.mark.sheet');
