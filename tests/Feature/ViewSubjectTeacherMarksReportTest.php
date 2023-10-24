@@ -24,6 +24,7 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
     public ClassRoom $class;
     public Teacher $teacher;
     public GradeClassSubjectTeacherMap $map;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -41,27 +42,29 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
         ]);
         $this->class = ClassRoom::factory()->create([
             'grade_id' => $this->grade->id,
-            'class_room' => $this->grade->grade.'-A'
+            'class_room' => $this->grade->grade . '-A'
         ]);
         $this->teacher = Teacher::factory()->create([
             'teacher_name' => 'Upul Shantha',
             'gender' => 'male',
         ]);
         $this->map = GradeClassSubjectTeacherMap::factory()->create([
-            'grade_id'=>$this->grade->id,
-            'class_id'=>$this->class->id,
-            'subject_id'=>$this->subject->id,
-            'teacher_id'=>$this->teacher->id
+            'grade_id' => $this->grade->id,
+            'class_id' => $this->class->id,
+            'subject_id' => $this->subject->id,
+            'teacher_id' => $this->teacher->id
         ]);
     }
+
     /** @test */
-    public function check_unmapped_teacher(){
+    public function check_unmapped_teacher()
+    {
         $teacherB = Teacher::factory()->create([
             'teacher_name' => 'Nayana Indarani',
             'gender' => 'female',
         ]);
 
-        $response = (new ViewMarksUseCase())->execute($teacherB,$this->class,$this->subject);
+        $response = (new ViewMarksUseCase())->execute($teacherB, $this->class, $this->subject);
 
         $this->assertFalse(
             $response,
