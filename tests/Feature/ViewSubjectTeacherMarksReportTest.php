@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Commands\ViewMarksCommand;
+use App\Exceptions\ViewMarkSheetException;
+use App\Http\Requests\ViewMarksRequest;
 use App\Models\ClassRoom;
 use App\Models\Grade;
-use App\Models\GradeClassSubjectTeacherMap;
+use App\Models\SubjectAssignmentSchedule;
 use App\Models\MarkSheet;
 use App\Models\Student;
 use App\Models\Subject;
@@ -23,19 +26,16 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
     public Grade $grade;
     public ClassRoom $class;
     public Teacher $teacher;
-    public GradeClassSubjectTeacherMap $map;
+    public SubjectAssignmentSchedule $schedule;
+    public ViewMarksRequest $viewMarksRequest;
+    public ViewMarksCommand $command;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->student = Student::factory()->create();
+        Student::factory()->count(10)->create();
         $this->subject = Subject::factory()->create([
             'subject_name' => 'Maths'
-        ]);
-        $this->marks = MarkSheet::factory()->create([
-            'student_id' => $this->student->id,
-            'subject_id' => $this->subject->id,
-            'marks' => 75,
         ]);
         $this->grade = Grade::factory()->create([
             'grade' => 10
@@ -44,31 +44,55 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
             'grade_id' => $this->grade->id,
             'class_room' => $this->grade->grade . '-A'
         ]);
+        MarkSheet::factory()->count(10)->create([
+            'subject_id' => $this->subject->id,
+            'class_id' => $this->class->id
+        ]);
         $this->teacher = Teacher::factory()->create([
             'teacher_name' => 'Upul Shantha',
             'gender' => 'male',
         ]);
-        $this->map = GradeClassSubjectTeacherMap::factory()->create([
+        $this->schedule = SubjectAssignmentSchedule::factory()->create([
             'grade_id' => $this->grade->id,
             'class_id' => $this->class->id,
             'subject_id' => $this->subject->id,
             'teacher_id' => $this->teacher->id
         ]);
+
+        $this->viewMarksRequest = new ViewMarksRequest();
+        $this->command = $this->viewMarksRequest->command($this->subject, $this->class);
     }
 
     /** @test */
-    public function check_unmapped_teacher()
+    public function when_unassigned_teacher_request_mark_sheet_then_cannot_access_mark_sheet()
     {
         $teacherB = Teacher::factory()->create([
-            'teacher_name' => 'Nayana Indarani',
+            'teacher_name' => 'Tania Fernando',
             'gender' => 'female',
         ]);
 
-        $response = (new ViewMarksUseCase())->execute($teacherB, $this->class, $this->subject);
+        try {
+            (new ViewMarksUseCase())->execute($teacherB, $this->command);
+        } catch (ViewMarkSheetException $e) {
+            $this->assertEquals("Unavailable subject assign records.", $e->getMessage());
+        }
+    }
 
-        $this->assertFalse(
-            $response,
-            "Given already mapped teacher"
-        );
+    /** @test
+     * @throws ViewMarkSheetException
+     */
+    public function when_assigned_teacher_requests_mark_sheet_then_mark_sheet_return()
+    {
+        $report = (new ViewMarksUseCase())->execute($this->teacher, $this->command);
+
+        $this->assertNotEmpty($report);
+
+        foreach ($report as $row) {
+            $this->assertArrayHasKey('teacher_name', $row);
+            $this->assertArrayHasKey('student_name', $row);
+            $this->assertArrayHasKey('subject_name', $row);
+            $this->assertArrayHasKey('class_room', $row);
+            $this->assertArrayHasKey('marks', $row);
+        }
     }
 }
