@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('grade_class_subject_teacher_maps', function (Blueprint $table) {
+        Schema::create('subject_assignment_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('grade_id')->constrained('grades','id');
             $table->foreignId('class_id')->constrained('class_rooms','id');
@@ -20,6 +20,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('grade_class_subject_teacher_maps');
+        Schema::dropIfExists('subject_assignment_schedules');
     }
 };

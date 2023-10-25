@@ -8,7 +8,7 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class GradeClassSubjectTeacherMapFactory extends Factory
+class SubjectAssignmentScheduleFactory extends Factory
 {
     public function definition(): array
     {
