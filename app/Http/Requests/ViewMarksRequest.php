@@ -21,10 +21,6 @@ class ViewMarksRequest extends FormRequest
 
     public function command(Subject $subject, ClassRoom $classRoom):ViewMarksCommand
     {
-        $command = new ViewMarksCommand();
-        $command->subject = $subject;
-        $command->classRoom = $classRoom;
 
-        return $command;
     }
 }

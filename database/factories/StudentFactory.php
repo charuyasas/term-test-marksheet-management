@@ -9,6 +9,7 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
+            'admission_number' => $this->faker->unique()->randomNumber(),
             'student_name' => $this->faker->name(),
             'gender' => $this->faker->randomElement(['male', 'female']),
             'dob' => $this->faker->date('Y-m-d', 'now'),

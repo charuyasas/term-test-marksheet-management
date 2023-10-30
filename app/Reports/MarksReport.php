@@ -2,30 +2,36 @@
 
 namespace App\Reports;
 
-use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 class MarksReport
 {
     public function __construct(
-        protected Teacher    $teacher,
+        protected User       $user,
         protected Collection $markSheet,
     )
     {
     }
 
-    public function generateReport(): array
+    public function generate(): Collection
     {
-        $marks = array();
+        $marks = new Collection;
+
         foreach ($this->markSheet as $mark) {
-            $marks[] = [
-                'teacher_name' => $this->teacher->teacher_name,
+            $marks->add([
+                'teacher_name' => $mark->teacher_name,
+                'admission_number' => $mark->admission_number,
                 'student_name' => $mark->student_name,
+                'gender' => $mark->gender,
                 'subject_name' => $mark->subject_name,
                 'class_room' => $mark->class_room,
                 'marks' => $mark->marks,
-            ];
+                'academic_year' => $mark->academic_year,
+                'term' => $mark->term,
+            ]);
         }
+
         return $marks;
     }
 }

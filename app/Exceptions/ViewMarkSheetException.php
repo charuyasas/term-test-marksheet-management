@@ -8,4 +8,19 @@ class ViewMarkSheetException extends \Exception
     {
         return new self('Unavailable subject assign records.');
     }
+
+    public static function noAcademicYear(): ViewMarkSheetException
+    {
+        return new self('Valid Academic Year required.');
+    }
+
+    public static function noTerm(): ViewMarkSheetException
+    {
+        return new self('Valid term number required.');
+    }
+
+    public static function noUserRoleAssignment()
+    {
+        return new self('No user assignment for this user');
+    }
 }
