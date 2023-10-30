@@ -2,10 +2,9 @@
 
 namespace App;
 
-enum Term: int
+enum Terms: int
 {
     case First = 1;
     case Second = 2;
     case Third = 3;
-
 }

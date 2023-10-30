@@ -12,7 +12,7 @@ class UserFactory extends Factory
     {
         $teacher = Teacher::pluck('id')->toArray();
         return [
-            'teacher_id' =>$this->faker->randomElement($teacher),
+            'teacher_id' => $this->faker->randomElement($teacher),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -23,7 +23,7 @@ class UserFactory extends Factory
 
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }

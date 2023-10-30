@@ -8,6 +8,7 @@ use App\Models\MarkSheet;
 use App\Models\SubjectAssignmentSchedule;
 use App\Models\User;
 use App\Reports\MarksReport;
+use App\UserRoles;
 use Illuminate\Support\Collection;
 
 class ViewMarksUseCase
@@ -17,11 +18,11 @@ class ViewMarksUseCase
      */
     public function execute(User $user, ViewMarksCommand $command): MarksReport
     {
-        if(!$user->hasAnyRole(['subject_teacher', 'class_teacher'])){
+        if (! $user->hasAnyRole([UserRoles::SubjectTeacher,UserRoles::ClassTeacher])) {
             throw ViewMarkSheetException::noUserRoleAssignment();
         }
 
-        if($user->hasRole('subject_teacher')) {
+        if ($user->hasRole(UserRoles::SubjectTeacher)) {
             $subjectAssignment = SubjectAssignmentSchedule::query()
                 ->where('grade_id', $command->classRoom->grade_id)
                 ->where('class_id', $command->classRoom->getKey())

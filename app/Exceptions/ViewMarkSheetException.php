@@ -19,7 +19,7 @@ class ViewMarkSheetException extends \Exception
         return new self('Valid term number required.');
     }
 
-    public static function noUserRoleAssignment()
+    public static function noUserRoleAssignment(): ViewMarkSheetException
     {
         return new self('No user assignment for this user');
     }

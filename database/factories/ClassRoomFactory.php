@@ -12,7 +12,7 @@ class ClassRoomFactory extends Factory
         $grade = $this->faker->randomElement(Grade::pluck('id')->toArray());
         return [
             'grade_id' => $grade,
-            'class_room' => $grade.'-'.$this->faker->randomElement(['A', 'B','C','D','E'])
+            'class_room' => $grade . '-' . $this->faker->randomElement(['A', 'B', 'C', 'D', 'E'])
         ];
     }
 }

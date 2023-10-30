@@ -9,7 +9,7 @@ class SubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'subject_name' => $this->faker->randomElement(['Maths', 'science','history','music','IT']),
+            'subject_name' => $this->faker->randomElement(['Maths', 'science', 'history', 'music', 'IT']),
         ];
     }
 }

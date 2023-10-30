@@ -12,11 +12,12 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
-use App\Term;
+use App\Terms;
 use App\UseCases\ViewMarksUseCase;
+use App\UserRoles;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -67,15 +68,15 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
         $this->command = new ViewMarksCommand();
         $this->command->subject = $this->subject;
         $this->command->classRoom = $this->class;
-        Role::create(['name' => 'subject_teacher']);
-        Role::create(['name' => 'class_teacher']);
+        Role::create(['name' => UserRoles::SubjectTeacher]);
+        Role::create(['name' => UserRoles::ClassTeacher]);
     }
 
     /** @test */
     public function when_subject_unassigned_subject_teacher_request_mark_sheet_then_cannot_access_mark_sheet()
     {
         $this->command->academicYear = Carbon::parse('2021-01-01');
-        $this->command->term = Term::Third;
+        $this->command->term = Terms::Third;
         $teacherB = Teacher::factory()->create([
             'teacher_name' => 'Tania Fernando',
             'gender' => 'female',
@@ -84,11 +85,10 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
             'teacher_id' => $teacherB->getKey(),
             'name' => $teacherB->teacher_name
         ]);
-        $userB->assignRole('subject_teacher');
-        $this->actingAs($userB);
+        $userB->assignRole(UserRoles::SubjectTeacher);
 
         try {
-            $this->marksReportGenerate(Auth::user(), $this->command);
+            $this->marksReportGenerate($userB, $this->command);
         } catch (ViewMarkSheetException $e) {
             $this->assertEquals("Unavailable subject assign records.", $e->getMessage());
         }
@@ -97,12 +97,11 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
     /** @test */
     public function when_subject_assigned_teacher_requests_mark_sheet_then_view_mark_sheet()
     {
-        $this->user->assignRole('subject_teacher');
-        $this->actingAs($this->user);
+        $this->user->assignRole(UserRoles::SubjectTeacher);
         $this->command->academicYear = Carbon::parse('2021-01-01');
-        $this->command->term = Term::Third;
+        $this->command->term = Terms::Third;
 
-        $marks = $this->marksReportGenerate(Auth::user(), $this->command);
+        $marks = $this->marksReportGenerate($this->user, $this->command);
 
         $this->assertNotEmpty($marks);
         $this->reportViewValidation($marks, '2021', 3);
@@ -111,10 +110,9 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
     /** @test */
     public function when_students_passing_there_grade_then_mark_sheet_generate_depend_on_the_academic_year_and_term()
     {
-        $this->user->assignRole('subject_teacher');
-        $this->actingAs($this->user);
+        $this->user->assignRole(UserRoles::SubjectTeacher);
         $this->command->academicYear = Carbon::parse('2022-01-01');
-        $this->command->term = Term::First;
+        $this->command->term = Terms::First;
         $this->subjectAssigningToTeacher('2022');
         $students = Student::factory()->count(10)->create()->toArray();
         foreach ($students as $student) {
@@ -127,7 +125,7 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
             ]);
         }
 
-        $marks = $this->marksReportGenerate(Auth::user(), $this->command);
+        $marks = $this->marksReportGenerate($this->user, $this->command);
 
         $this->assertNotEmpty($marks);
         $this->reportViewValidation($marks, '2022', 1);
@@ -136,25 +134,24 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
     /** @test */
     public function when_authorized_logged_user_request_marks_sheet_then_view_mark_sheet()
     {
-        $this->user->assignRole('class_teacher');
+        $this->user->assignRole(UserRoles::ClassTeacher);
         $this->command->academicYear = Carbon::parse('2021-01-01');
-        $this->command->term = Term::Third;
-        $this->actingAs($this->user);
+        $this->command->term = Terms::Third;
 
-        $marks = $this->marksReportGenerate(Auth::user(), $this->command);
+        $marks = $this->marksReportGenerate($this->user, $this->command);
 
         $this->assertNotEmpty($marks);
         $this->reportViewValidation($marks, '2021', 3);
     }
 
-    private function marksReportGenerate(User $user, ViewMarksCommand $command): \Illuminate\Support\Collection
+    private function marksReportGenerate(User $user, ViewMarksCommand $command): Collection
     {
         $report = app(ViewMarksUseCase::class)->execute($user, $command);
 
         return $report->generate();
     }
 
-    private function reportViewValidation(\Illuminate\Support\Collection $marks, string $academicYear, string $term): void
+    private function reportViewValidation(Collection $marks, string $academicYear, string $term): void
     {
         foreach ($marks as $row) {
             $this->assertArrayHasKey('teacher_name', $row);
