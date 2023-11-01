@@ -49,6 +49,6 @@ class ViewMarksUseCase
             ->where('term', $command->term)
             ->get();
 
-        return new MarksReport($user, $markSheet);
+        return new MarksReport($markSheet);
     }
 }

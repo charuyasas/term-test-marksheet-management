@@ -8,4 +8,5 @@ class UserRoleException extends \Exception
     {
         return new self('No user assignment for this user');
     }
+
 }

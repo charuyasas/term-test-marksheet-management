@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
 class MarksReport
 {
     public function __construct(
-        protected User       $user,
         protected Collection $markSheet,
     )
     {
