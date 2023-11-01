@@ -3,6 +3,7 @@
 namespace App\UseCases;
 
 use App\Commands\ViewMarksCommand;
+use App\Exceptions\UserRoleException;
 use App\Exceptions\ViewMarkSheetException;
 use App\Models\MarkSheet;
 use App\Models\SubjectAssignmentSchedule;
@@ -14,12 +15,12 @@ use Illuminate\Support\Collection;
 class ViewMarksUseCase
 {
     /**
-     * @throws ViewMarkSheetException
+     * @throws ViewMarkSheetException|UserRoleException
      */
     public function execute(User $user, ViewMarksCommand $command): MarksReport
     {
-        if (! $user->hasAnyRole([UserRoles::SubjectTeacher,UserRoles::ClassTeacher])) {
-            throw ViewMarkSheetException::noUserRoleAssignment();
+        if (!$user->hasAnyRole([UserRoles::SubjectTeacher, UserRoles::ClassTeacher])) {
+            throw UserRoleException::noUserRoleAssignment();
         }
 
         if ($user->hasRole(UserRoles::SubjectTeacher)) {
