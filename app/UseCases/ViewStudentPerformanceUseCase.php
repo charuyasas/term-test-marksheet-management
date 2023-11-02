@@ -5,6 +5,7 @@ namespace App\UseCases;
 use App\Commands\ViewStudentPerformanceCommand;
 use App\Exceptions\UserRoleException;
 use App\Exceptions\ViewStudentPerformanceException;
+use App\Models\MarksGrading;
 use App\Models\MarkSheet;
 use App\Models\User;
 use App\Reports\StudentPerformanceReport;
@@ -42,6 +43,8 @@ class ViewStudentPerformanceUseCase
             throw ViewStudentPerformanceException::noRelevantDataForMarkSheet();
         }
 
-        return new StudentPerformanceReport($markSheet);
+        $grading = MarksGrading::query()->get();
+
+        return new StudentPerformanceReport($markSheet,$grading);
     }
 }

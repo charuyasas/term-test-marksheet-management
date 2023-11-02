@@ -8,14 +8,56 @@ class StudentPerformanceReport
 {
     public function __construct(
         protected Collection $markSheet,
-    )
-    {
+        protected Collection $grading
+    ) {
     }
 
     public function generate(): Collection
     {
+        $studentPerformance = new Collection;
+        $studentPerformance->add([
+            'subject_marks' => $this->getSubjectMarks(),
+            'students_marks' => $this->getStudentMarkSheet()
+        ]);
+
+        return $studentPerformance;
+    }
+
+    public function getSubjectMarks(): Collection
+    {
+        $subjects = $this->markSheet->unique('subject_id');
+        $subjectGrading = new Collection;
+
+        foreach ($subjects as $subject) {
+
+            $marksGrading = new Collection;
+
+            foreach ($this->grading as $grade) {
+                $marksGrading->add([
+                    $grade->grading => $this->markSheet
+                        ->whereBetween('marks', [$grade->min, $grade->max])
+                        ->where('subject_id', $subject->subject_id)
+                        ->count(),
+                    'color_code' => $grade->color_code
+                ]);
+            }
+
+            $subjectGrading->add([
+                'subject_id' => $subject->subject_id,
+                'subject_name' => $subject->subject_name,
+                'academic_year' => $subject->academic_year,
+                'term' => $subject->term,
+                'marks_grading' => $marksGrading
+            ]);
+        }
+
+        return $subjectGrading;
+    }
+
+    public function getStudentMarkSheet(): Collection
+    {
         $students = $this->markSheet->unique('student_id');
-        $studentDetails = new Collection;
+        $studentMarks = new Collection;
 
         foreach ($students as $student) {
             $marks = new Collection;
@@ -28,7 +70,7 @@ class StudentPerformanceReport
                 ]);
             }
 
-            $studentDetails->add([
+            $studentMarks->add([
                 'teacher_name' => $student->teacher_name,
                 'admission_number' => $student->admission_number,
                 'student_name' => $student->student_name,
@@ -40,6 +82,6 @@ class StudentPerformanceReport
             ]);
         }
 
-        return $studentDetails;
+        return $studentMarks;
     }
 }
