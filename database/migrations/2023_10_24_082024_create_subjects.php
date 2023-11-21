@@ -10,6 +10,7 @@ return new class extends Migration {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('subject_name');
+            $table->string('medium');
             $table->timestamps();
         });
     }

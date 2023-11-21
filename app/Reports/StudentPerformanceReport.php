@@ -9,7 +9,8 @@ class StudentPerformanceReport
     public function __construct(
         protected Collection $markSheet,
         protected Collection $grading
-    ) {
+    )
+    {
     }
 
     public function generate(): Collection
@@ -61,6 +62,7 @@ class StudentPerformanceReport
 
         foreach ($students as $student) {
             $marks = new Collection;
+            $totalMarks = 0;
 
             foreach ($this->markSheet->where('student_id', $student->student_id) as $mark) {
                 $marks->add([
@@ -68,6 +70,7 @@ class StudentPerformanceReport
                     'subject_name' => $mark->subject_name,
                     'marks' => $mark->marks,
                 ]);
+                $totalMarks += $mark->marks;
             }
 
             $studentMarks->add([
@@ -78,10 +81,12 @@ class StudentPerformanceReport
                 'class_room' => $student->class_room,
                 'academic_year' => $student->academic_year,
                 'term' => $student->term,
-                'marks' => $marks
+                'marks' => $marks,
+                'total' => $totalMarks,
+                'average' => $totalMarks / $this->markSheet->where('student_id', $student->student_id)->count(),
             ]);
         }
 
-        return $studentMarks;
+        return $studentMarks->sortByDesc('total');
     }
 }

@@ -10,6 +10,7 @@ class SubjectFactory extends Factory
     {
         return [
             'subject_name' => $this->faker->randomElement(['Maths', 'Science', 'History', 'Music', 'IT']),
+            'medium' => $this->faker->randomElement(['Sinhala', 'English']),
         ];
     }
 }

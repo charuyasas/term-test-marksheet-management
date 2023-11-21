@@ -63,6 +63,21 @@ class ViewStudentPerformanceReportTest extends TestCase
         Role::create(['name' => UserRoles::Principle]);
     }
 
+    private function generateMarkSheet(): void
+    {
+        for ($x = 0; $x < 5; $x++) {
+            foreach ($this->student as $student) {
+                MarkSheet::factory()->create([
+                    'subject_id' => $this->subject[$x]->getKey(),
+                    'class_id' => $this->class->getKey(),
+                    'teacher_id' => $this->teacher[$x]->getKey(),
+                    'academic_year' => '2021',
+                    'term' => '3'
+                ]);
+            }
+        }
+    }
+
     /** @test */
     public function when_unauthorized_user_tried_to_access_report_then_report_not_visible(): void
     {
@@ -71,6 +86,13 @@ class ViewStudentPerformanceReportTest extends TestCase
         } catch (UserRoleException $e) {
             $this->assertEquals("No user assignment for this user", $e->getMessage());
         }
+    }
+
+    private function performanceReportGenerate(User $user, ViewStudentPerformanceCommand $command): Collection
+    {
+        $report = app(ViewStudentPerformanceUseCase::class)->execute($user, $command);
+
+        return $report->generate();
     }
 
     /** @test */
@@ -88,39 +110,14 @@ class ViewStudentPerformanceReportTest extends TestCase
         $this->reportViewValidation($marks, '2021', '3');
     }
 
-    /** @test */
-    public function when_authorized_user_requests_the_report_with_different_mark_grading_then_report_will_visible(): void
+    public function createMarksGrading(string $grade, int $min, int $max, string $color): void
     {
-        $this->user->assignRole(UserRoles::Principle);
-        $this->createMarksGrading('distinction', 60, 100, '#6633');
-        $this->createMarksGrading('excellent', 40, 59, '#7845');
-        $this->createMarksGrading('credit', 0, 39, '#9562');
-
-        $marks = $this->performanceReportGenerate($this->user, $this->command);
-
-        $this->reportViewValidation($marks, '2021', '3');
-    }
-
-    private function generateMarkSheet(): void
-    {
-        for ($x = 0; $x < 5; $x++) {
-            foreach ($this->student as $student) {
-                MarkSheet::factory()->create([
-                    'subject_id' => $this->subject[$x]->getKey(),
-                    'class_id' => $this->class->getKey(),
-                    'teacher_id' => $this->teacher[$x]->getKey(),
-                    'academic_year' => '2021',
-                    'term' => '3'
-                ]);
-            }
-        }
-    }
-
-    private function performanceReportGenerate(User $user, ViewStudentPerformanceCommand $command): Collection
-    {
-        $report = app(ViewStudentPerformanceUseCase::class)->execute($user, $command);
-
-        return $report->generate();
+        MarksGrading::factory()->create([
+            'grading' => $grade,
+            'min' => $min,
+            'max' => $max,
+            'color_code' => $color
+        ]);
     }
 
     private function reportViewValidation(Collection $marks, string $academicYear, string $term): void
@@ -142,6 +139,8 @@ class ViewStudentPerformanceReportTest extends TestCase
             $this->assertEquals($academicYear, $row['academic_year']);
             $this->assertEquals($term, $row['term']);
             $this->assertFalse($row['marks']->isEmpty());
+            $this->assertArrayHasKey('total', $row);
+            $this->assertArrayHasKey('average', $row);
         }
     }
 
@@ -155,17 +154,20 @@ class ViewStudentPerformanceReportTest extends TestCase
             $this->assertEquals($academicYear, $row['academic_year']);
             $this->assertEquals($term, $row['term']);
             $this->assertFalse($row['marks_grading']->isEmpty());
-            $this->assertEquals($gradeCount,$row['marks_grading']->count());
+            $this->assertEquals($gradeCount, $row['marks_grading']->count());
         }
     }
 
-    public function createMarksGrading(string $grade, int $min, int $max, string $color): void
+    /** @test */
+    public function when_authorized_user_requests_the_report_with_different_mark_grading_then_report_will_visible(): void
     {
-        MarksGrading::factory()->create([
-            'grading' => $grade,
-            'min' => $min,
-            'max' => $max,
-            'color_code' => $color
-        ]);
+        $this->user->assignRole(UserRoles::Principle);
+        $this->createMarksGrading('distinction', 60, 100, '#6633');
+        $this->createMarksGrading('excellent', 40, 59, '#7845');
+        $this->createMarksGrading('credit', 0, 39, '#9562');
+
+        $marks = $this->performanceReportGenerate($this->user, $this->command);
+
+        $this->reportViewValidation($marks, '2021', '3');
     }
 }

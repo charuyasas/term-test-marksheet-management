@@ -159,8 +159,10 @@ class ViewSubjectTeacherMarksReportTest extends TestCase
             $this->assertArrayHasKey('student_name', $row);
             $this->assertArrayHasKey('gender', $row);
             $this->assertArrayHasKey('subject_name', $row);
+            $this->assertArrayHasKey('medium', $row);
             $this->assertArrayHasKey('class_room', $row);
             $this->assertArrayHasKey('marks', $row);
+            $this->assertArrayHasKey('rank', $row);
             $this->assertEquals($academicYear, $row['academic_year']);
             $this->assertEquals($term, $row['term']);
         }
